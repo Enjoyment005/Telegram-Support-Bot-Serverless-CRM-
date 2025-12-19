@@ -1,60 +1,63 @@
-🤖 Telegram Support Bot (Serverless CRM)
-Работает без сервера, ничего платить не нужно вообще.
+# 🤖 Telegram Support Bot (Serverless CRM)
+There is no need to pay for the server, the bot works for free always
+  
+**Telegram Support Bot** is a serverless bot for **Yandex Cloud Functions** that turns any Telegram group into a full-fledged Helpdesk/CRM system.
 
-**Telegram Support Bot** — это серверлесс-бот для Яндекс Облака (Yandex Cloud Functions), который превращает любую группу Telegram в полноценную систему поддержки (Helpdesk/CRM).
+It operates entirely without a dedicated server (free tier eligible). The bot utilizes **Forum Topics** in Telegram Supergroups to manage tickets. A separate topic is created for each new user, keeping conversations organized and isolated.
 
-Бот использует **Темы (Forum Topics)** в супергруппах Telegram. Каждому новому пользователю создается отдельный топик. Вся переписка ведется там.
+## ✨ Features
 
-## ✨ Возможности
+* **Dialog Isolation:** A separate Forum Topic is created for each user in the admin group.
+* **Smart Naming:** Topics are named using the user's `Username` or `First Name + Last Name` + `ID`.
+* **Info Card:** On the first contact, the bot sends a detailed card with user info (ID, link, name).
+* **Media Support:** Supports two-way forwarding of photos, videos, voice messages, files, and stickers.
+* **Feedback Mechanism:** User messages are **Forwarded** to the topic, while Admin replies are sent back to the user as **Copies** (appearing as if they came from the bot).
+* **Persistent Database:** The "User — Topic" mapping is stored in a JSON file in **Yandex Object Storage** (S3), so data is not lost during function restarts.
+* **Admin Commands:** Includes tools to reset user bindings (`/reset`).
 
-* **Изоляция диалогов:** Для каждого пользователя создается отдельная тема (Topic) в группе админов.
-* **Умное именование:** Тема называется по `Username` или `Имени Фамилии` + `ID` пользователя.
-* **Информативная карточка:** При первом обращении бот присылает подробную информацию о пользователе (ID, ссылка, имя).
-* **Поддержка медиа:** Пересылает фото, видео, голосовые, файлы и стикеры в обе стороны.
-* **Обратная связь:** Сообщения от пользователя **пересылаются** (Forward) в тему, ответы админа приходят пользователю как **копии** (от имени бота).
-* **База данных в S3:** Привязка "Пользователь — Топик" хранится в JSON-файле в Яндекс Object Storage (не стирается при перезагрузке).
-* **Админ-команды:** Возможность сбросить привязку пользователя (`/reset`).
+## 🛠 Prerequisites
 
-## 🛠 Предварительная настройка
+### 1. Telegram Setup
 
-### 1. Подготовка Telegram
+1. Create a bot via [@BotFather](https://t.me/BotFather) and get your **Token**.
+2. Create a new Group in Telegram.
+3. **IMPORTANT:** Enable **Topics** in the group settings.
+4. Add the bot to the group and promote it to **Administrator** (Must have **Manage Topics** permission).
+5. Get the Group ID (usually starts with `-100`).
+* *Tip:* Forward any message from the group to [@getmyid_bot](https://t.me/getmyid_bot).
 
-1. Создайте бота через [@BotFather](https://t.me/BotFather) и получите **Token**.
-2. Создайте новую группу в Telegram.
-3. **ВАЖНО:** В настройках группы включите **Темы (Topics)**.
-4. Добавьте бота в группу и сделайте его **Администратором** (обязательно право **Manage Topics** / Управление темами).
-5. Узнайте ID группы (обычно начинается на `-100`).
-* *Совет:* Перешлите любое сообщение из группы боту [@getmyid_bot](https://t.me/getmyid_bot).
 
-### 2. Подготовка Яндекс Облака (Object Storage)
-1. Создайте **Бакет** (Bucket) в Object Storage.
-2. Создайте **Сервисный аккаунт**.
-3. Выдайте аккаунту роль `storage.editor`.
-4. Создайте для аккаунта **Статический ключ доступа**. Сохраните `Key ID` и `Secret Key`.
+
+### 2. Yandex Cloud Setup (Object Storage)
+
+1. Create a **Bucket** in Object Storage.
+2. Create a **Service Account**.
+3. Grant the account the `storage.editor` role.
+4. Create a **Static Access Key** for this account. Save the `Key ID` and `Secret Key`.
 
 ---
 
-## 🚀 Установка и Деплой (Yandex Cloud Functions)
+## 🚀 Installation & Deploy (Yandex Cloud Functions)
 
-### Шаг 1. Создание функции
+### Step 1. Create Function
 
-1. Зайдите в **Cloud Functions**.
-2. Создайте новую функцию (Python).
-3. В редакторе создайте два файла: `index.py` и `requirements.txt`.
+1. Go to **Cloud Functions**.
+2. Create a new function (Python).
+3. In the editor, create two files: `index.py` and `requirements.txt`.
 
-### Шаг 2. Код
+### Step 2. Code
 
-**Файл `requirements.txt`:**
+**File `requirements.txt`:**
 
 ```text
 boto3
 
 ```
 
-**Файл `index.py`:**
-*Скопируйте код из этого репозитория.*
+**File `index.py`:**
+*Copy the code from this repository.*
 
-> ⚠️ **ВНИМАНИЕ:** Найдите в коде переменную `ADMIN_CHAT_ID` и вставьте туда ID вашей группы!
+> ⚠️ **ATTENTION:** Find the `ADMIN_CHAT_ID` variable in the code and insert your group ID there!
 > ```python
 > ADMIN_CHAT_ID = "-100xxxxxxxxxx" 
 > 
@@ -62,37 +65,27 @@ boto3
 > 
 > 
 
-### Шаг 3. Переменные окружения
+### Step 3. Environment Variables
 
-В настройках функции добавьте следующие переменные:
+Add the following variables in the function settings:
 
-| Ключ | Значение | Описание |
+| Key | Value | Description |
 | --- | --- | --- |
-| `BOT_TOKEN` | `12345:AAH...` | Токен от BotFather |
-| `BUCKET_NAME` | `my-bot-db` | Имя вашего бакета в Object Storage |
-| `AWS_ACCESS_KEY_ID` | `YCAJ...` | ID ключа сервисного аккаунта |
-| `AWS_SECRET_ACCESS_KEY` | `YCO...` | Секретный ключ сервисного аккаунта |
+| `BOT_TOKEN` | `12345:AAH...` | Token from BotFather |
+| `BUCKET_NAME` | `my-bot-db` | Name of your Bucket in Object Storage |
+| `AWS_ACCESS_KEY_ID` | `YCAJ...` | Service Account Key ID |
+| `AWS_SECRET_ACCESS_KEY` | `YCO...` | Service Account Secret Key |
 
-*(Опционально)* `TG_SECRET` — секретный токен для защиты вебхука.
+*(Optional)* `TG_SECRET` — Secret token for webhook security.
 
-Действительно, это важный момент! Использование **API Gateway** — это более профессиональный и правильный подход, чем просто делать функцию "публичной". Это дает красивую ссылку и более гибкое управление.
+### Step 4. API Gateway Setup
 
-Вот дополненный раздел инструкции. Добавь его в `README.md` **вместо** или **после** шага с публикацией функции.
+Instead of making the function public directly, we will set up an API Gateway. This is safer and cleaner.
 
----
-
-### Добавление раздела про API Gateway в README
-
-Вставь этот блок в инструкцию (например, после создания функции, раздел "Шаг 4"):
-
-## 🌐 Шаг 4. Настройка API Gateway
-
-Вместо того чтобы делать функцию публичной напрямую, мы создадим API-шлюз. Это безопаснее и правильнее.
-
-1. Зайдите в раздел **API Gateway** в консоли Yandex Cloud.
-2. Нажмите **"Создать API-шлюз"**.
-3. Назовите его, например, `bot-gateway`.
-4. В поле **Спецификация (YAML)** удалите всё и вставьте этот код:
+1. Go to **API Gateway** in the Yandex Cloud console.
+2. Click **"Create API gateway"**.
+3. Name it (e.g., `bot-gateway`).
+4. In the **Specification (YAML)** field, delete everything and paste the following code:
 
 ```yaml
 openapi: 3.0.0
@@ -104,75 +97,83 @@ paths:
     post:
       x-yc-apigateway-integration:
         type: cloud_functions
-        function_id: <ВСТАВЬТЕ_ID_ВАШЕЙ_ФУНКЦИИ>
-        service_account_id: <ВСТАВЬТЕ_ID_СЕРВИСНОГО_АККАУНТА>
+        function_id: <INSERT_YOUR_FUNCTION_ID>
+        service_account_id: <INSERT_YOUR_SERVICE_ACCOUNT_ID>
       operationId: botHandler
 
 ```
 
-> **Важно:**
-> * Замените `<ВСТАВЬТЕ_ID_ВАШЕЙ_ФУНКЦИИ>` на ID функции, которую вы создали ранее.
-> * Замените `<ВСТАВЬТЕ_ID_СЕРВИСНОГО_АККАУНТА>` на ID сервисного аккаунта (того самого, который имеет доступ к S3).
+> **Important:**
+> * Replace `<INSERT_YOUR_FUNCTION_ID>` with the ID of the function you created in Step 1.
+> * Replace `<INSERT_YOUR_SERVICE_ACCOUNT_ID>` with the ID of the Service Account (the one with access to S3).
+> 
+> 
 
-5. Нажмите **Создать**.
-6. В списке шлюзов вы увидите **Служебный домен** (он выглядит как `https://d5h.......apigw.yandexcloud.net`).
-7. Скопируйте эту ссылку. Это и есть адрес вашего бота.
+5. Click **Create**.
+6. In the list of gateways, find the **Service Domain** (it looks like `https://d5h.......apigw.yandexcloud.net`).
+7. Copy this URL. This is your bot's address.
 
-### 🔗 Шаг 5. Привязка вебхука (Webhook)
+### 🔗 Step 5. Webhook Setup
 
-Теперь нужно сказать Telegram, куда отправлять сообщения.
+Now you need to tell Telegram where to send messages.
 
-1. Возьмите ссылку из API Gateway.
-2. Подставьте свои данные в эту ссылку и откройте её в браузере:
+1. Take the URL from the API Gateway.
+2. Insert your data into the link below and open it in your browser:
 
 ```
-https://api.telegram.org/bot<ВАШ_ТОКЕН_БОТА>/setWebhook?url=<ССЫЛКА_ИЗ_API_GATEWAY>
+https://api.telegram.org/bot<YOUR_BOT_TOKEN>/setWebhook?url=<URL_FROM_API_GATEWAY>
 
 ```
 
-*Пример:*
+*Example:*
 `https://api.telegram.org/bot12345:AAF.../setWebhook?url=https://d5hqk12345.apigw.yandexcloud.net`
 
-Если вы увидите сообщение `Webhook was set`, значит всё готово! 🎉
+If you see the message `Webhook was set`, you are ready to go! 🎉
 
 ---
 
-## 🎮 Использование
+## 🎮 Usage
 
-### Для пользователей
+### For Users
 
-Пользователь просто пишет боту в личные сообщения.
+The user simply sends a message to the bot in a private chat.
 
-* Бот создает тему в группе админов.
-* Первым сообщением прилетает карточка с данными клиента.
+* The bot creates a Topic in the admin group.
+* The first message sent is an info card with the client's data.
 
-### Для администраторов
+### For Administrators
 
-1. Зайдите в нужную тему (Topic).
-2. Просто напишите ответ — бот отправит его пользователю.
-3. Если пользователь прислал фото/видео — вы увидите его в теме.
+1. Go to the created Topic.
+2. Simply write a reply — the bot will send it to the user.
+3. If the user sends media, you will see it in the topic.
 
-### Команды администратора
+### Admin Commands
 
-Эти команды работают только внутри группы админов:
+These commands only work inside the admin group:
 
-* `/reset` (внутри темы) — Сбрасывает привязку текущего пользователя к этой теме.
-* *Сценарий:* Удаляете тему руками -> пишите `/reset` -> бот забывает старую тему. При следующем сообщении от юзера создастся новая.
-Пишешь в General (или в любой теме):
-* `/reset <ID>` — Сброс конкретного пользователя по Telegram ID.
-* `/reset all` — Полный сброс базы данных (Бот "забудет" всех пользователей и начнет создавать новые темы для всех).
+* `/reset` (inside a topic): Unbinds the current user from this topic.
+* *Scenario:* You delete the topic manually -> type `/reset` -> the bot "forgets" the old topic. The next message from the user will create a fresh topic.
+
+
+* `/reset <ID>` (in General or any topic): Unbind a specific user by their Telegram ID.
+* `/reset all` (in General or any topic): **Full Database Wipe**. The bot forgets all users and will create new topics for everyone.
 
 ---
 
-## 🆘 Решение проблем
+## 🆘 Troubleshooting
 
-**Ошибка: `Bad Request: the chat is not a forum**`
-* Вы не включили "Темы" в настройках группы Telegram.
-**Ошибка: `Bad Request: not enough rights**`
-* Бот не админ или у него не стоит галочка "Управление темами" (Manage Topics).
-**Ошибка: Бот не отвечает / создает темы бесконечно**
-* Проверьте логи функции в Яндекс Облаке. Возможно, ошибка в доступах к S3 (неверные ключи).
+**Error: `Bad Request: the chat is not a forum**`
 
-## 📄 Лицензия
+* You have not enabled "Topics" in the Telegram group settings.
+
+**Error: `Bad Request: not enough rights**`
+
+* The bot is not an Admin, or the "Manage Topics" permission is disabled.
+
+**Error: Bot creates endless topics / doesn't respond**
+
+* Check the Function logs in Yandex Cloud. Most likely an issue with S3 permissions (invalid Access Keys).
+
+## 📄 License
 
 MIT License. Free to use.
