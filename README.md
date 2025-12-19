@@ -1,4 +1,4 @@
-# 🤖 Telegram Support Bot (Serverless CRM)
+# 🤖 Telegram support bot (Serverless CRM)
 **THERE IS NO NEED TO PAY FOR THE SERVER, THE BOT WORKS FOR FREE ALWAYS!!!**
   
 **Telegram Support Bot** is a serverless bot for **Yandex Cloud Functions** that turns any Telegram group into a full-fledged Helpdesk/CRM system.
